@@ -13,13 +13,13 @@ Patterns* patterns_init() {
 	return patterns;
 }
 
-void patterns_add_pattern(Patterns* self, char* pattern) {
+int patterns_add_pattern(Patterns* self, char* pattern) {
 	if (!self)
-		exit(EXIT_FAILURE);
+		return 1;
 
-	Node* new_pattern = malloc(sizeof(*(self->patterns)));
+	StringNode* new_pattern = malloc(sizeof(*(self->patterns)));
 	if (!new_pattern)
-		exit(EXIT_FAILURE);
+		return 1;
 
 	new_pattern->string = pattern;
 	new_pattern->next = NULL;
@@ -27,21 +27,25 @@ void patterns_add_pattern(Patterns* self, char* pattern) {
 	if (!self->patterns) {
 		self->patterns = new_pattern;
 		self->last = new_pattern;
-		return;
+		return 0;
 	}
 
 	self->last->next = new_pattern;
 	self->last = new_pattern;
+	return 0;
 }
 
 int patterns_is_match(Patterns* self, char* string) {
-	if (!self)
-		exit(EXIT_FAILURE);
-
-	if (!self->patterns)
+	if (self == NULL)
 		return 0;
 
-	Node* curr = self->patterns;
+	if (self->patterns == NULL)
+		return 0;
+
+	if (string == NULL)
+		return 0;
+
+	StringNode* curr = self->patterns;
 	while (curr) {
 		if (fnmatch(curr->string, string, 0) == 0)
 			return 1;
@@ -50,5 +54,15 @@ int patterns_is_match(Patterns* self, char* string) {
 	return 0;
 }
 
-void patterns_free(Patterns* patterns) {}
+void patterns_free(Patterns* self) {
+	if (self == NULL)
+		return;
 
+	StringNode* prev;
+	StringNode* node = self->patterns;
+	while (node) {
+		prev = node;
+		node = node->next;
+		free(prev);
+	}
+}
